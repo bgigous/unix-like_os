@@ -1,0 +1,109 @@
+#define MAX_CALL_NUMBER		10
+#define PCB_MASK			0xFFFFE000
+#define STACK_TEST			0x00700000
+
+# eax - call number
+# ebx - first argument
+# ecx - second argument (if applicable)
+# edx - third argument (if applicable)
+
+# THE STACK
+
+#	old ebx		 <-- esp (kernel's, right?)
+#	arbitrary stuff
+
+.globl system_call
+
+system_call:
+	
+	CMPL	$0, %eax					# assuming call numbers start at 1
+	JE		sc_error
+
+	CMPL	$MAX_CALL_NUMBER, %eax		# can't be greater than max call number
+	JA		sc_error
+
+	PUSHL	%eax				# crazy stuff ahead
+	PUSHL	%ebx
+	PUSHL	%ecx
+
+	# calculate eip for storage
+#	CMPL	$STACK_TEST, %esp	# if esp is greater than 7MB
+#	JA		get_process_eip		# that means this system call was called by a process
+
+#	MOVL	$0, %ebx			# otherwise, it came from the kernel	
+#	JMP		get_eip				# find dat eip
+
+get_process_eip:	
+	MOVL 	%eax, %ecx
+	MOVL	%esp, %eax
+	ANDL	$PCB_MASK, %eax 	# find address of current pcb
+	# MOVL	(%eax), %ebx		# get pid number (it's the first thing in the pcb struct)
+
+get_eip:
+	#MOVL	8(%esp), %ebx		# get eip from stack (interrupt pushed it on)
+								# WARNING: May not work if we somehow get an error code
+	#CMPL	$2, %ecx
+	#JNE		POPS
+	#MOVL	12(%esp), %ebx
+	#MOVL	%ebx, 8(%eax)		# move eip into our pcb
+	#MOVL	16(%esp), %ebx
+	#MOVL 	%ebx, 12(%eax)
+	#MOVL	20(%esp), %ebx
+	#MOVL	%ebx, 16(%eax)
+	#MOVL 	24(%esp), %ebx
+	#MOVL 	%ebx, 20(%eax)
+	#MOVL	28(%esp), %ebx
+	#MOVL	%ebx, 24(%eax)
+
+	CMPL	$2, %ecx			# if we are doing execute...
+	JNE		POPS
+	MOVL	24(%esp), %ebx
+								#NOT NECESSARY
+	MOVL	%ebx, 4(%eax)		# save parent task's esp into pcb
+	MOVL	%ebp, 8(%eax)		# save parent task's ebp into pcb
+POPS:
+	# done?
+	POPL	%ecx
+	POPL	%ebx
+	POPL	%eax
+
+start_system_call:
+	
+	# at this point, eax contains a valid call number
+	DEC		%eax
+
+	# Step 1: save register values
+	# Step 2: push parameters
+	# Step 3: call particular C handler function
+	# Step 4: pop off parameters
+	# Step 5: restore register values
+
+	# save our register values
+	# NOTE: this step is for security purposes
+	#		we don't want to leak info to the user
+	PUSHL	%edx
+	PUSHL	%ecx
+	PUSHL	%ebx
+	# push arguments (C calling convention)
+	# NOTE: Yep, we are pushing the exact same registers again, but this time
+	#		it's for the arguments of the system call handler
+	PUSHL	%edx						# third arg
+	PUSHL	%ecx						# second arg
+	PUSHL	%ebx						# first arg
+	CALL	*sc_jmp_table(,%eax,4)		# call C function to handle sys call
+										# (goto effective address of sc_jmp_table + %eax*4)
+	ADDL	$12, %esp					# pop off parameters
+	POPL	%ebx						
+	POPL	%ecx						# restore registers
+	POPL	%edx
+	JMP		sc_return
+
+sc_error:
+	MOVL	$-1, %eax
+	
+sc_return:
+	IRET								# return from interrupt (INT 0x80)
+										# eax is return value from sys call handler C function
+
+sc_jmp_table:
+	.long /*0,*/ halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn

@@ -1,0 +1,36 @@
+asm_handle.o: asm_handle.S
+boot.o: boot.S multiboot.h x86_desc.h types.h
+sys_call.o: sys_call.S
+x86_desc.o: x86_desc.S x86_desc.h types.h
+calendar.o: calendar.c calendar.h types.h lib.h keyboard.h term_driver.h \
+  i8259.h
+exception.o: exception.c exception.h sys_handler.h types.h x86_desc.h \
+  pcb.h file.h filesys_struct.h filesys.h rtc.h lib.h keyboard.h \
+  term_driver.h i8259.h paging.h calendar.h
+filesys.o: filesys.c filesys.h types.h filesys_struct.h lib.h keyboard.h \
+  paging.h pcb.h file.h rtc.h term_driver.h i8259.h sys_handler.h \
+  x86_desc.h calendar.h
+i8259.o: i8259.c i8259.h types.h lib.h keyboard.h
+kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h keyboard.h \
+  i8259.h debug.h rtc.h asm_handle.h timer.h paging.h exception.h \
+  sys_handler.h pcb.h file.h filesys_struct.h filesys.h term_driver.h \
+  calendar.h sys_call.h
+keyboard.o: keyboard.c i8259.h types.h keyboard.h lib.h term_driver.h \
+  sys_handler.h x86_desc.h pcb.h file.h filesys_struct.h filesys.h rtc.h \
+  paging.h calendar.h terminals.h task.h
+lib.o: lib.c lib.h types.h keyboard.h
+paging.o: paging.c paging.h types.h lib.h keyboard.h
+pcb.o: pcb.c pcb.h file.h filesys_struct.h types.h filesys.h rtc.h lib.h \
+  keyboard.h term_driver.h i8259.h
+rtc.o: rtc.c i8259.h types.h rtc.h lib.h keyboard.h
+scheduler.o: scheduler.c scheduler.h types.h
+shells.o: shells.c
+sys_handler.o: sys_handler.c sys_handler.h types.h x86_desc.h pcb.h \
+  file.h filesys_struct.h filesys.h rtc.h lib.h keyboard.h term_driver.h \
+  i8259.h paging.h calendar.h
+term_driver.o: term_driver.c term_driver.h lib.h types.h keyboard.h \
+  i8259.h
+terminals.o: terminals.c terminals.h task.h pcb.h file.h filesys_struct.h \
+  types.h filesys.h rtc.h lib.h keyboard.h term_driver.h i8259.h paging.h \
+  x86_desc.h sys_handler.h calendar.h
+timer.o: timer.c timer.h i8259.h types.h lib.h keyboard.h

@@ -1,0 +1,118 @@
+
+# make all handlers global
+.globl default_hndl_asm
+.globl hndl_timer
+.globl hndl_keyboard
+.globl hndl_cascade
+.globl hndl_irq3
+.globl hndl_serial
+.globl hndl_irq5
+.globl hndl_irq6
+.globl hndl_irq7
+.globl hndl_rtc
+.globl hndl_irq9
+.globl hndl_irq10
+.globl hndl_eth0
+.globl hndl_mouse
+.globl hndl_ide0
+.globl hndl_irq14
+
+# these get called when we receive interrupts
+# they call another function to handle the respective interrupt
+
+default_hndl_asm:
+	pusha
+	call default_handler
+	popa
+	iret
+	
+hndl_timer:
+	pusha
+	call handler_timer
+	popa
+	iret
+	
+hndl_keyboard:
+	pusha
+	call handler_keyboard
+	popa
+	iret
+	
+hndl_cascade:
+	pusha
+	call handler_cascade
+	popa
+	iret
+	
+hndl_irq3:
+	pusha
+	call handler_irq3
+	popa
+	iret
+	
+hndl_serial:
+	pusha
+	call handler_serial
+	popa
+	iret
+
+hndl_irq5:
+	pusha
+	call handler_irq5
+	popa
+	iret
+
+hndl_irq6:
+	pusha
+	call handler_irq6
+	popa
+	iret
+
+hndl_irq7:
+	pusha
+	call handler_irq7
+	popa
+	iret
+
+hndl_rtc:
+	pusha
+	call handler_rtc
+	popa
+	iret
+
+hndl_irq9:
+	pusha
+	call handler_irq9
+	popa
+	iret
+
+hndl_irq10:
+	pusha
+	call handler_irq10
+	popa
+	iret
+
+hndl_eth0:
+	pusha
+	call handler_eth0
+	popa
+	iret
+
+hndl_mouse:
+	pusha
+	call handler_mouse
+	popa
+	iret
+
+hndl_ide0:
+	pusha
+	call handler_ide0
+	popa
+	iret
+
+hndl_irq14:
+	pusha
+	call handler_irq14
+	popa
+	iret
+

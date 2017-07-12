@@ -1,0 +1,72 @@
+#ifndef _PCB_H
+#define _PCB_H
+
+#include "file.h"
+#include "filesys_struct.h"
+#include "filesys.h"
+#include "rtc.h"
+#include "term_driver.h"
+#include "keyboard.h"
+#include "types.h"
+#include "lib.h"
+
+#define FILE_ARRAY_SIZE 8
+
+typedef void (*dz_op)(void);
+typedef void (*seg_op)(void);
+typedef void (*intr_op)(void);
+typedef void (*alarm_op)(void);
+typedef void (*user1_op)(void);
+
+typedef struct sig_ops {
+	dz_op 		div_zero;
+	seg_op		seg_fault;
+	intr_op		interrupt;
+	alarm_op	alarm;
+	user1_op	user;
+} sig_ops;
+
+typedef struct pcb {
+	int32_t pid;
+
+	uint32_t ESP;
+	uint32_t EBP;
+
+	uint32_t switch_ESP;
+	uint32_t switch_EBP;
+
+	uint32_t EIP;
+	uint32_t CS;
+	uint32_t EFLAGS;
+	uint32_t SS;
+	/* the file array (Appendix A 7.2) */
+	struct pcb * parent;	// the parent task's pcb pointer
+	struct pcb * child;
+	uint8_t arg[FILE_NAME_LENGTH];
+	sig_ops signal_ops;
+	uint8_t sig_pending;
+	uint8_t sig_masked;
+	file_t file_array[FILE_ARRAY_SIZE];
+} pcb_t; //no alignment here as pcb is not 8 kb. Align the task struct which includes the pcb. 
+
+/* "not implemented" */
+int32_t ni_open(const uint8_t *filename);
+int32_t ni_read(int32_t fd, void *buf, int32_t nbytes);
+int32_t ni_write(int32_t fd, const void *buf, int32_t nbytes);
+int32_t ni_close(int32_t fd);
+
+/* initializes a pcb */
+void init_pcb(pcb_t * pcb);
+
+/* adds a file to a pcb's file array */
+int32_t add_file(pcb_t * pcb, file_t file);
+
+/* closes a file in a pcb's file array */
+int32_t close_file(pcb_t * pcb, int32_t fd);
+
+/* unitializes a pcb */
+int32_t close_pcb(pcb_t * pcb);
+
+/* helper functions */
+
+#endif
